@@ -32,5 +32,6 @@ export default defineConfig({
       },
     }),
   ],
+  build: { chunkSizeWarningLimit: 1000 },
   test: { environment: 'node', include: ['src/**/*.test.ts'] },
 })

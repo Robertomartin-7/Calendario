@@ -9,8 +9,9 @@ import { TaskSheet } from '../components/TaskSheet'
 import { ViewSwitch } from '../components/ViewSwitch'
 import { useBackground, type BackgroundApi } from '../hooks/useBackground'
 import { useSwipe } from '../hooks/useSwipe'
+import { useToday } from '../hooks/useToday'
 import { tasksOnDay } from '../lib/calendar'
-import { fromDay, monthName, toDay, todayString, type DayString } from '../lib/dates'
+import { fromDay, monthName, toDay, type DayString } from '../lib/dates'
 import { eventsOnDay } from '../lib/events'
 import { selectionForMonth, stepLabels, stepSelection, viewTitle, type View } from '../lib/navigation'
 import type { CalendarEvent, EventInput, Task, TaskInput } from '../types'
@@ -44,7 +45,7 @@ type Props = {
 }
 
 export function CalendarView({ tasks, events, actions, eventActions, headerText, onHeaderText, backgrounds }: Props) {
-  const today = todayString()
+  const today = useToday()
   const [view, setView] = useState<View>('mes')
   // Un solo día seleccionado manda en las tres vistas; el mes y la semana salen de él.
   const [selected, setSelected] = useState<DayString>(today)
