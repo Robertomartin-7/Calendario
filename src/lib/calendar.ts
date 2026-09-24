@@ -2,6 +2,7 @@ import { eachDayOfInterval, endOfMonth, endOfWeek, startOfMonth, startOfWeek } f
 import type { Task } from '../types'
 import type { DayString } from './dates'
 import { PRIORITY_RANK } from './priority'
+import { occursOn } from './recurrence'
 
 /** Días visibles del mes: de lunes a domingo, solo las semanas necesarias (5 o 6). */
 export function monthGrid(month: Date): Date[] {
@@ -17,7 +18,7 @@ const byPriorityThenCreated = (a: Task, b: Task) =>
 /** Tareas pendientes de un día, de prioridad alta a baja. */
 export function tasksOnDay(tasks: Task[], day: DayString): Task[] {
   return tasks
-    .filter((t) => t.date <= day && day <= (t.endDate ?? t.date))
+    .filter((t) => occursOn(t, day))
     .sort(byPriorityThenCreated)
 }
 

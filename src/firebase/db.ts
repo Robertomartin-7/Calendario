@@ -1,5 +1,5 @@
 import {
-  addDoc, collection, deleteDoc, doc, onSnapshot, updateDoc,
+  addDoc, arrayUnion, collection, deleteDoc, deleteField, doc, onSnapshot, updateDoc,
 } from 'firebase/firestore'
 import type { Task, TaskInput } from '../types'
 import { db } from './config'
@@ -16,10 +16,21 @@ export function subscribeTasks(uid: string, onData: (t: Task[]) => void, onError
 
 // No se espera a la confirmación del servidor: la caché local ya actualiza la pantalla.
 export function addTask(uid: string, input: TaskInput) {
-  void addDoc(tasksCol(uid), { ...input, recurrence: null, skippedDates: [], createdAt: Date.now() })
+  const { endDate, ...rest } = input
+  void addDoc(tasksCol(uid), {
+    ...rest,
+    ...(endDate ? { endDate } : {}),
+    skippedDates: [],
+    createdAt: Date.now(),
+  })
 }
-export function updateTask(uid: string, id: string, input: Partial<TaskInput>) {
-  void updateDoc(doc(db, 'users', uid, 'tasks', id), input)
+export function updateTask(uid: string, id: string, input: TaskInput) {
+  const { endDate, ...rest } = input
+  void updateDoc(doc(db, 'users', uid, 'tasks', id), { ...rest, endDate: endDate ?? deleteField() })
+}
+/** Completar una ocurrencia de una serie: se añade su fecha a skippedDates y la serie continúa. */
+export function skipOccurrence(uid: string, id: string, day: string) {
+  void updateDoc(doc(db, 'users', uid, 'tasks', id), { skippedDates: arrayUnion(day) })
 }
 export function removeTask(uid: string, id: string) {
   void deleteDoc(doc(db, 'users', uid, 'tasks', id))

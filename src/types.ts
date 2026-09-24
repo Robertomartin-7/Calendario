@@ -21,4 +21,6 @@ export type Task = {
 }
 
 /** Campos que edita la usuaria (el resto los pone la capa de datos). */
-export type TaskInput = Pick<Task, 'title' | 'description' | 'date' | 'priority'>
+export type TaskInput = Pick<Task, 'title' | 'description' | 'date' | 'priority' | 'recurrence'> & {
+  endDate?: DayString
+}

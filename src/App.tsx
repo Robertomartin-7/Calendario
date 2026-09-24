@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { addTask, removeTask, updateTask } from './firebase/db'
+import { addTask, removeTask, skipOccurrence, updateTask } from './firebase/db'
 import type { TaskInput } from './types'
 import { Login } from './components/Login'
 import { isConfigured } from './firebase/config'
@@ -38,6 +38,7 @@ function Signed({ uid, email }: { uid: string; email: string | null }) {
       add: (i: TaskInput) => addTask(uid, i),
       update: (id: string, i: TaskInput) => updateTask(uid, id, i),
       remove: (id: string) => removeTask(uid, id),
+      skip: (id: string, day: string) => skipOccurrence(uid, id, day),
     }),
     [uid],
   )

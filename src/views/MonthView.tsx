@@ -14,6 +14,7 @@ export type TaskActions = {
   add: (input: TaskInput) => void
   update: (id: string, input: TaskInput) => void
   remove: (id: string) => void
+  skip: (id: string, day: string) => void
 }
 
 export function MonthView({ tasks, actions }: { tasks: Task[]; actions: TaskActions }) {
@@ -61,7 +62,7 @@ export function MonthView({ tasks, actions }: { tasks: Task[]; actions: TaskActi
           day={selected} isToday={selected === today} tasks={dayTasks}
           onAdd={() => setSheet({ kind: 'new' })}
           onOpen={(task) => setSheet({ kind: 'edit', task })}
-          onComplete={(t) => actions.remove(t.id)}
+          onComplete={(t) => (t.recurrence ? actions.skip(t.id, selected) : actions.remove(t.id))}
         />
       </div>
 

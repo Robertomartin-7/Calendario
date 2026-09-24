@@ -28,7 +28,8 @@ export function TaskList({ day, isToday, tasks, onAdd, onOpen, onComplete }: Pro
   }
 
   const count = tasks.length
-  const dayLabel = format(fromDay(day), "EEEE d 'de' MMMM", { locale: es })
+  const rawLabel = format(fromDay(day), "EEEE d 'de' MMMM", { locale: es })
+  const dayLabel = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
 
   return (
     <section aria-label="Por terminar">
@@ -40,7 +41,7 @@ export function TaskList({ day, isToday, tasks, onAdd, onOpen, onComplete }: Pro
               {count} {count === 1 ? 'tarea' : 'tareas'}
             </span>
           </h2>
-          {!isToday && <p className="text-sm capitalize text-ink-soft">{dayLabel}</p>}
+          {!isToday && <p className="text-sm text-ink-soft">{dayLabel}</p>}
         </div>
         <button
           type="button" onClick={onAdd}
