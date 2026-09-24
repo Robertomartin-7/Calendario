@@ -2,6 +2,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { fromDay, type DayString } from '../lib/dates'
 import type { CalendarEvent, Task } from '../types'
+import { EmptyDay } from './EmptyDay'
 import { EventCard } from './EventCard'
 import { TaskRow } from './TaskRow'
 
@@ -49,11 +50,7 @@ export function TaskList({ day, isToday, tasks, events, onOpenEvent, onAdd, onOp
       <div className="flex flex-col gap-3">
         {events.map((e) => <EventCard key={e.id} event={e} onOpen={onOpenEvent} />)}
 
-        {count === 0 && (
-          <p className="rounded-card bg-card px-2 py-8 text-center text-ink-soft shadow-[0_1px_0_var(--color-line)]">
-            {isToday ? 'Nada pendiente hoy. ¡Respira!' : 'Nada pendiente este día.'}
-          </p>
-        )}
+        {count === 0 && <EmptyDay day={day} />}
 
         {tasks.length > 0 && (
           <div className="rounded-card bg-card px-3 py-1 shadow-[0_1px_0_var(--color-line)]">

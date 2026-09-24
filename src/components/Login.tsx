@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Tooth } from './DentalIcons'
 import { authErrorMessage, registerEmail, signInEmail, signInWithGoogle } from '../firebase/auth'
 
 export function Login({ initialError }: { initialError?: string | null }) {
@@ -25,6 +26,7 @@ export function Login({ initialError }: { initialError?: string | null }) {
   return (
     <main className="mx-auto flex min-h-[100dvh] max-w-sm flex-col justify-center gap-6 px-6 py-10">
       <header>
+        <Tooth className="mb-3 text-baja" />
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft">
           Higiene bucodental
         </p>

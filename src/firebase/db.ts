@@ -65,3 +65,12 @@ export function subscribeSettings(uid: string, onData: (s: { headerText?: string
 export function saveHeaderText(uid: string, headerText: string) {
   void setDoc(settingsDoc(uid), { headerText }, { merge: true })
 }
+
+// Una foto por mes, en su propio documento (users/{uid}/backgrounds/AAAA-MM), para no engordar los ajustes.
+const bgDoc = (uid: string, key: string) => doc(db, 'users', uid, 'backgrounds', key)
+
+export function subscribeBackground(uid: string, key: string, onData: (dataUrl: string | null) => void) {
+  return onSnapshot(bgDoc(uid, key), (snap) => onData((snap.data()?.data as string | undefined) ?? null), () => onData(null))
+}
+export const saveBackground = (uid: string, key: string, data: string) => setDoc(bgDoc(uid, key), { data })
+export const removeBackground = (uid: string, key: string) => deleteDoc(bgDoc(uid, key))

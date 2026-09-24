@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
-import { addEvent, addTask, removeEvent, removeTask, saveHeaderText, skipOccurrence, updateEvent, updateTask } from './firebase/db'
+import {
+  addEvent, addTask, removeBackground, removeEvent, removeTask, saveBackground, saveHeaderText, skipOccurrence,
+  subscribeBackground, updateEvent, updateTask } from './firebase/db'
 import type { EventInput, TaskInput } from './types'
 import { useEvents } from './hooks/useEvents'
+import type { BackgroundApi } from './hooks/useBackground'
 import { Login } from './components/Login'
 import { isConfigured } from './firebase/config'
 import { logOut } from './firebase/auth'
@@ -47,6 +50,14 @@ function Signed({ uid, email }: { uid: string; email: string | null }) {
     }),
     [uid],
   )
+  const backgrounds = useMemo<BackgroundApi>(
+    () => ({
+      subscribe: (key, cb) => subscribeBackground(uid, key, cb),
+      save: (key, data) => saveBackground(uid, key, data),
+      remove: (key) => removeBackground(uid, key),
+    }),
+    [uid],
+  )
   const eventActions = useMemo(
     () => ({
       add: (i: EventInput) => addEvent(uid, i),
@@ -60,7 +71,7 @@ function Signed({ uid, email }: { uid: string; email: string | null }) {
       {error && <p role="alert" className="bg-alta/40 px-4 py-2 text-center text-sm">{error}</p>}
       <CalendarView
         tasks={tasks} events={events} actions={actions} eventActions={eventActions}
-        headerText={headerText} onHeaderText={(t) => saveHeaderText(uid, t)}
+        headerText={headerText} onHeaderText={(t) => saveHeaderText(uid, t)} backgrounds={backgrounds}
       />
       <footer className="pb-8 text-center text-xs text-ink-faint">
         {email} ·{' '}

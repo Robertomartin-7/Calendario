@@ -1,14 +1,16 @@
-import { startOfMonth } from 'date-fns'
+import { format, startOfMonth } from 'date-fns'
 import { useMemo, useState } from 'react'
+import { BackgroundSheet } from '../components/BackgroundSheet'
 import { ComposeSheet } from '../components/ComposeSheet'
 import { EventSheet } from '../components/EventSheet'
 import { Header } from '../components/Header'
 import { MonthYearPicker } from '../components/MonthYearPicker'
 import { TaskSheet } from '../components/TaskSheet'
 import { ViewSwitch } from '../components/ViewSwitch'
+import { useBackground, type BackgroundApi } from '../hooks/useBackground'
 import { useSwipe } from '../hooks/useSwipe'
 import { tasksOnDay } from '../lib/calendar'
-import { fromDay, toDay, todayString, type DayString } from '../lib/dates'
+import { fromDay, monthName, toDay, todayString, type DayString } from '../lib/dates'
 import { eventsOnDay } from '../lib/events'
 import { selectionForMonth, stepLabels, stepSelection, viewTitle, type View } from '../lib/navigation'
 import type { CalendarEvent, EventInput, Task, TaskInput } from '../types'
@@ -38,17 +40,21 @@ type Props = {
   eventActions: EventActions
   headerText: string
   onHeaderText: (t: string) => void
+  backgrounds: BackgroundApi
 }
 
-export function CalendarView({ tasks, events, actions, eventActions, headerText, onHeaderText }: Props) {
+export function CalendarView({ tasks, events, actions, eventActions, headerText, onHeaderText, backgrounds }: Props) {
   const today = todayString()
   const [view, setView] = useState<View>('mes')
   // Un solo día seleccionado manda en las tres vistas; el mes y la semana salen de él.
   const [selected, setSelected] = useState<DayString>(today)
   const [sheet, setSheet] = useState<Sheet>(null)
   const [picking, setPicking] = useState(false)
+  const [choosingBg, setChoosingBg] = useState(false)
 
   const month = startOfMonth(fromDay(selected))
+  const monthKey = format(month, 'yyyy-MM')
+  const photo = useBackground(backgrounds, monthKey)
   const dayTasks = useMemo(() => tasksOnDay(tasks, selected), [tasks, selected])
   const dayEvents = useMemo(() => eventsOnDay(events, selected), [events, selected])
 
@@ -85,13 +91,22 @@ export function CalendarView({ tasks, events, actions, eventActions, headerText,
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 pb-10 pt-6 md:px-8 md:pt-10">
+    <div
+      className="relative isolate mx-auto flex w-full max-w-5xl flex-col gap-5 px-4 pb-10 pt-6 md:px-8 md:pt-10"
+      data-photo={photo ? '' : undefined}
+    >
+      {photo && (
+        <>
+          <div key={monthKey} className="anim-photo fixed inset-0 -z-20 bg-cover bg-center" style={{ backgroundImage: `url(${photo})` }} aria-hidden />
+          <div className="fixed inset-0 -z-10 bg-bg/60" aria-hidden />
+        </>
+      )}
       <Header
         headerText={headerText} onHeaderText={onHeaderText}
         title={viewTitle(view, selected)} onTitle={() => setPicking(true)}
         onPrev={() => step(-1)} onNext={() => step(1)} prevLabel={prevLabel} nextLabel={nextLabel}
       />
-      <ViewSwitch view={view} onChange={setView} onToday={() => setSelected(today)} />
+      <ViewSwitch view={view} onChange={setView} onToday={() => setSelected(today)} onBackground={() => setChoosingBg(true)} />
 
       <div key={view} className="anim-fade" {...(view === 'mes' ? {} : swipe)}>
         {view === 'mes' && (
@@ -121,6 +136,12 @@ export function CalendarView({ tasks, events, actions, eventActions, headerText,
           year={month.getFullYear()} month={month.getMonth()}
           onClose={() => setPicking(false)}
           onPick={(y, m) => { setSelected(selectionForMonth(new Date(y, m, 1), today)); setPicking(false) }}
+        />
+      )}
+      {choosingBg && (
+        <BackgroundSheet
+          monthLabel={monthName(month)} current={photo} onClose={() => setChoosingBg(false)}
+          onSave={(data) => backgrounds.save(monthKey, data)} onRemove={() => backgrounds.remove(monthKey)}
         />
       )}
       {sheet?.kind === 'new' && (

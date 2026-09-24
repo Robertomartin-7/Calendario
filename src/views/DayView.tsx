@@ -1,5 +1,6 @@
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { EmptyDay } from '../components/EmptyDay'
 import { EventCard } from '../components/EventCard'
 import { TaskRow } from '../components/TaskRow'
 import { NewButton } from '../components/TaskList'
@@ -37,11 +38,7 @@ export function DayView({ day, isToday, tasks, events, onAdd, onOpen, onOpenEven
         {tasks.map((t) => <TaskRow key={t.id} task={t} variant="large" onOpen={onOpen} onComplete={onComplete} />)}
       </div>
 
-      {tasks.length + events.length === 0 && (
-        <p className="rounded-card bg-card px-4 py-12 text-center text-ink-soft shadow-[0_1px_0_var(--color-line)]">
-          Nada pendiente este día. ¡Disfrútalo!
-        </p>
-      )}
+      {tasks.length + events.length === 0 && <EmptyDay day={day} className="py-12" />}
     </section>
   )
 }

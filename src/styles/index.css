@@ -58,3 +58,9 @@ button { cursor: pointer; min-height: 44px; min-width: 44px; }
 @keyframes sheet-up { from { transform: translateY(24px); opacity: 0 } to { transform: none; opacity: 1 } }
 .anim-fade { animation: fade-in 200ms var(--ease-soft); }
 .anim-sheet { animation: sheet-up 220ms var(--ease-soft); }
+
+/* Con foto de fondo: tarjetas semitransparentes para mantener la legibilidad. */
+[data-photo] { --color-card: rgb(255 255 255 / 0.84); }
+[data-photo] .bg-card { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+@keyframes photo-in { from { opacity: 0 } to { opacity: 1 } }
+.anim-photo { animation: photo-in 400ms ease-out; }

@@ -21,7 +21,7 @@ export function Sheet({ label, header, onClose, onSubmit, children }: {
     >
       <form
         onSubmit={onSubmit} role="dialog" aria-modal="true" aria-label={label}
-        className="anim-sheet flex max-h-[92dvh] w-full max-w-md flex-col gap-3.5 overflow-y-auto rounded-t-[1.75rem] bg-card p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:rounded-[1.75rem]"
+        className="anim-sheet flex max-h-[92dvh] [--color-card:#ffffff] w-full max-w-md flex-col gap-3.5 overflow-y-auto rounded-t-[1.75rem] bg-card p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:rounded-[1.75rem]"
       >
         <div className="flex items-center justify-between gap-2">
           {header}

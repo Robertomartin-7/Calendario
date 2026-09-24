@@ -6,14 +6,14 @@ App web personal (una sola usuaria) de tareas con vista de calendario mensual. i
 React + TypeScript + Vite + Tailwind v4 · date-fns (es) · Firebase Auth + Firestore + Hosting · vite-plugin-pwa · Vitest.
 
 ## Alcance
-Tareas (título, descripción, prioridad, repetición, varios días) y eventos (nombre, fecha, repetición anual, emoji). Vistas Mes, Semana y Día. No añadir nada que no esté pedido; ante la duda, lo más simple.
+Tareas (título, descripción, prioridad, repetición, varios días) y eventos (nombre, fecha, repetición anual, emoji). Vistas Mes, Semana y Día. Extras de personalización: foto de fondo por mes, decoración dental sutil y mensajes motivacionales en los días sin tareas (`src/lib/messages.ts`). No añadir nada que no esté pedido; ante la duda, lo más simple.
 
 ## Fuera de alcance (NO implementar)
-Compartir · avisos/notificaciones/recordatorios · horas · asignaturas/categorías · historial de hechas · lugar/enlace · adjuntos · duplicar · papelera · búsqueda/filtros · hábitos · cuenta atrás · importar/exportar · modo oscuro · modo offline como requisito.
+Compartir · avisos/notificaciones/recordatorios · horas · asignaturas/categorías · historial de hechas · lugar/enlace · adjuntos · duplicar · papelera · búsqueda/filtros · hábitos · cuenta atrás · importar/exportar · vista imprimible (descartada por Roberto) · modo oscuro · modo offline como requisito.
 
 ## Reglas de datos
 - Días como texto `"YYYY-MM-DD"` (sin hora ni zona horaria). Usar `src/lib/dates.ts`.
-- Datos en `users/{uid}/{tasks,events,settings}`. Las repeticiones se calculan al vuelo; nunca guardar copias por ocurrencia.
+- Datos en `users/{uid}/{tasks,events,settings,backgrounds}`. Cada foto de fondo va en `backgrounds/AAAA-MM` como data URL (JPEG ≤ 1200 px, calidad 0,7). Las repeticiones se calculan al vuelo; nunca guardar copias por ocurrencia.
 - Completar una tarea la borra para siempre (sin confirmar ni deshacer). En series: añade la fecha a `skippedDates`.
 - Títulos duplicados permitidos.
 
