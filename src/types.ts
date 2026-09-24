@@ -24,3 +24,13 @@ export type Task = {
 export type TaskInput = Pick<Task, 'title' | 'description' | 'date' | 'priority' | 'recurrence'> & {
   endDate?: DayString
 }
+
+export type CalendarEvent = {
+  id: string
+  name: string
+  date: DayString
+  repeatsYearly: boolean
+  emoji?: string
+}
+
+export type EventInput = Omit<CalendarEvent, 'id'>

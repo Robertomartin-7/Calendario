@@ -16,6 +16,7 @@
   --color-media: #f3d67e;
   --color-baja: #a6d8bf;
   --color-event: #dcd3f0;
+  --color-event-deep: #b9a9e0;
 
   --radius-card: 1.5rem;
   --ease-soft: cubic-bezier(0.2, 0.7, 0.2, 1);

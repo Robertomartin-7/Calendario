@@ -2,7 +2,8 @@ import { isSameMonth } from 'date-fns'
 import { dotsFor, monthGrid, tasksOnDay } from '../lib/calendar'
 import { toDay, type DayString } from '../lib/dates'
 import { PRIORITIES, PRIORITY_BG, PRIORITY_LABEL } from '../lib/priority'
-import type { Task } from '../types'
+import type { CalendarEvent, Task } from '../types'
+import { eventsOnDay } from '../lib/events'
 import { useSwipe } from '../hooks/useSwipe'
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
@@ -12,12 +13,13 @@ type Props = {
   selected: DayString
   today: DayString
   tasks: Task[]
+  events: CalendarEvent[]
   onSelect: (day: Date) => void
   onPrev: () => void
   onNext: () => void
 }
 
-export function MonthGrid({ month, selected, today, tasks, onSelect, onPrev, onNext }: Props) {
+export function MonthGrid({ month, selected, today, tasks, events, onSelect, onPrev, onNext }: Props) {
   const swipe = useSwipe(onNext, onPrev)
   const days = monthGrid(month)
 
@@ -31,6 +33,7 @@ export function MonthGrid({ month, selected, today, tasks, onSelect, onPrev, onN
         {days.map((d) => {
           const key = toDay(d)
           const { priorities, hasMore } = dotsFor(tasksOnDay(tasks, key))
+          const dayEvents = eventsOnDay(events, key)
           const inMonth = isSameMonth(d, month)
           const isToday = key === today
           const isSelected = key === selected
@@ -38,7 +41,7 @@ export function MonthGrid({ month, selected, today, tasks, onSelect, onPrev, onN
             <button
               key={key} type="button" role="gridcell"
               onClick={() => onSelect(d)}
-              aria-label={`${d.getDate()} de ${d.toLocaleDateString('es-ES', { month: 'long' })}${priorities.length ? `, ${priorities.length}${hasMore ? ' o más' : ''} tareas` : ''}`}
+              aria-label={`${d.getDate()} de ${d.toLocaleDateString('es-ES', { month: 'long' })}${priorities.length ? `, ${priorities.length}${hasMore ? ' o más' : ''} tareas` : ''}${dayEvents.length ? `, evento: ${dayEvents.map((e) => e.name).join(', ')}` : ''}`}
               aria-selected={isSelected}
               className={`flex min-h-[52px] flex-col items-center justify-start gap-1 rounded-2xl pt-1 transition-colors duration-150 ${
                 isSelected && !isToday ? 'bg-ink/[0.07]' : ''
@@ -51,7 +54,12 @@ export function MonthGrid({ month, selected, today, tasks, onSelect, onPrev, onN
               >
                 {d.getDate()}
               </span>
-              <span className="flex h-2 items-center gap-[3px]" aria-hidden>
+              <span className="flex h-3.5 items-center gap-[3px]" aria-hidden>
+                {dayEvents.length > 0 && (
+                  dayEvents[0].emoji
+                    ? <span className="text-[11px] leading-none">{dayEvents[0].emoji}</span>
+                    : <span className="h-[6px] w-[6px] rotate-45 rounded-[1px] bg-event-deep" />
+                )}
                 {priorities.map((p, i) => (
                   <span key={i} className={`h-[7px] w-[7px] rounded-full ${PRIORITY_BG[p]}`} />
                 ))}

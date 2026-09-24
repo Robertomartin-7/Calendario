@@ -3,12 +3,15 @@ import { es } from 'date-fns/locale'
 import { useState } from 'react'
 import { fromDay, type DayString } from '../lib/dates'
 import { PRIORITY_BG, PRIORITY_LABEL } from '../lib/priority'
-import type { Task } from '../types'
+import type { CalendarEvent, Task } from '../types'
+import { EventCard } from './EventCard'
 
 type Props = {
   day: DayString
   isToday: boolean
   tasks: Task[]
+  events: CalendarEvent[]
+  onOpenEvent: (e: CalendarEvent) => void
   onAdd: () => void
   onOpen: (t: Task) => void
   onComplete: (t: Task) => void
@@ -16,7 +19,7 @@ type Props = {
 
 const LEAVE_MS = 200
 
-export function TaskList({ day, isToday, tasks, onAdd, onOpen, onComplete }: Props) {
+export function TaskList({ day, isToday, tasks, events, onOpenEvent, onAdd, onOpen, onComplete }: Props) {
   const [leaving, setLeaving] = useState<Set<string>>(new Set())
 
   function complete(t: Task) {
@@ -27,7 +30,8 @@ export function TaskList({ day, isToday, tasks, onAdd, onOpen, onComplete }: Pro
     }, LEAVE_MS)
   }
 
-  const count = tasks.length
+  const count = tasks.length + events.length
+  const unit = events.length > 0 ? (count === 1 ? 'elemento' : 'elementos') : count === 1 ? 'tarea' : 'tareas'
   const rawLabel = format(fromDay(day), "EEEE d 'de' MMMM", { locale: es })
   const dayLabel = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
 
@@ -35,10 +39,10 @@ export function TaskList({ day, isToday, tasks, onAdd, onOpen, onComplete }: Pro
     <section aria-label="Por terminar">
       <div className="flex items-baseline justify-between gap-3 px-1 pb-3">
         <div>
-          <h2 className="flex items-baseline gap-2 font-serif text-2xl font-semibold text-ink">
+          <h2 className="flex items-baseline gap-2 whitespace-nowrap font-serif text-2xl font-semibold text-ink">
             Por terminar
             <span className="font-sans text-sm font-normal text-ink-soft">
-              {count} {count === 1 ? 'tarea' : 'tareas'}
+              {count} {unit}
             </span>
           </h2>
           {!isToday && <p className="text-sm text-ink-soft">{dayLabel}</p>}
@@ -51,13 +55,18 @@ export function TaskList({ day, isToday, tasks, onAdd, onOpen, onComplete }: Pro
         </button>
       </div>
 
-      <div className="rounded-card bg-card px-3 py-1 shadow-[0_1px_0_var(--color-line)]">
-        {count === 0 ? (
-          <p className="px-2 py-8 text-center text-ink-soft">
+      <div className="flex flex-col gap-3">
+        {events.map((e) => <EventCard key={e.id} event={e} onOpen={onOpenEvent} />)}
+
+        {count === 0 && (
+          <p className="rounded-card bg-card px-2 py-8 text-center text-ink-soft shadow-[0_1px_0_var(--color-line)]">
             {isToday ? 'Nada pendiente hoy. ¡Respira!' : 'Nada pendiente este día.'}
           </p>
-        ) : (
-          tasks.map((t) => (
+        )}
+
+        {tasks.length > 0 && (
+          <div className="rounded-card bg-card px-3 py-1 shadow-[0_1px_0_var(--color-line)]">
+          {tasks.map((t) => (
             <div
               key={t.id}
               className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${
@@ -85,7 +94,8 @@ export function TaskList({ day, isToday, tasks, onAdd, onOpen, onComplete }: Pro
                 </div>
               </div>
             </div>
-          ))
+          ))}
+          </div>
         )}
       </div>
     </section>

@@ -1,7 +1,7 @@
 import {
   addDoc, arrayUnion, collection, deleteDoc, deleteField, doc, onSnapshot, updateDoc,
 } from 'firebase/firestore'
-import type { Task, TaskInput } from '../types'
+import type { CalendarEvent, EventInput, Task, TaskInput } from '../types'
 import { db } from './config'
 
 const tasksCol = (uid: string) => collection(db, 'users', uid, 'tasks')
@@ -34,4 +34,25 @@ export function skipOccurrence(uid: string, id: string, day: string) {
 }
 export function removeTask(uid: string, id: string) {
   void deleteDoc(doc(db, 'users', uid, 'tasks', id))
+}
+
+const eventsCol = (uid: string) => collection(db, 'users', uid, 'events')
+
+export function subscribeEvents(uid: string, onData: (e: CalendarEvent[]) => void, onError: (e: Error) => void) {
+  return onSnapshot(
+    eventsCol(uid),
+    (snap) => onData(snap.docs.map((d) => ({ ...(d.data() as Omit<CalendarEvent, 'id'>), id: d.id }))),
+    onError,
+  )
+}
+export function addEvent(uid: string, input: EventInput) {
+  const { emoji, ...rest } = input
+  void addDoc(eventsCol(uid), { ...rest, ...(emoji ? { emoji } : {}) })
+}
+export function updateEvent(uid: string, id: string, input: EventInput) {
+  const { emoji, ...rest } = input
+  void updateDoc(doc(db, 'users', uid, 'events', id), { ...rest, emoji: emoji ?? deleteField() })
+}
+export function removeEvent(uid: string, id: string) {
+  void deleteDoc(doc(db, 'users', uid, 'events', id))
 }

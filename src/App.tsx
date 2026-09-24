@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { addTask, removeTask, skipOccurrence, updateTask } from './firebase/db'
-import type { TaskInput } from './types'
+import { addEvent, addTask, removeEvent, removeTask, skipOccurrence, updateEvent, updateTask } from './firebase/db'
+import type { EventInput, TaskInput } from './types'
+import { useEvents } from './hooks/useEvents'
 import { Login } from './components/Login'
 import { isConfigured } from './firebase/config'
 import { logOut } from './firebase/auth'
@@ -32,7 +33,9 @@ function Authed() {
 }
 
 function Signed({ uid, email }: { uid: string; email: string | null }) {
-  const { tasks, error } = useTasks(uid)
+  const { tasks, error: tasksError } = useTasks(uid)
+  const { events, error: eventsError } = useEvents(uid)
+  const error = tasksError ?? eventsError
   const actions = useMemo(
     () => ({
       add: (i: TaskInput) => addTask(uid, i),
@@ -42,10 +45,18 @@ function Signed({ uid, email }: { uid: string; email: string | null }) {
     }),
     [uid],
   )
+  const eventActions = useMemo(
+    () => ({
+      add: (i: EventInput) => addEvent(uid, i),
+      update: (id: string, i: EventInput) => updateEvent(uid, id, i),
+      remove: (id: string) => removeEvent(uid, id),
+    }),
+    [uid],
+  )
   return (
     <>
       {error && <p role="alert" className="bg-alta/40 px-4 py-2 text-center text-sm">{error}</p>}
-      <MonthView tasks={tasks} actions={actions} />
+      <MonthView tasks={tasks} events={events} actions={actions} eventActions={eventActions} />
       <footer className="pb-8 text-center text-xs text-ink-faint">
         {email} ·{' '}
         <button onClick={logOut} className="min-h-0 min-w-0 underline underline-offset-2">Cerrar sesión</button>

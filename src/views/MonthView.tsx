@@ -3,12 +3,15 @@ import { useMemo, useState } from 'react'
 import { Header } from '../components/Header'
 import { MonthGrid, PriorityLegend } from '../components/MonthGrid'
 import { TaskList } from '../components/TaskList'
+import { ComposeSheet } from '../components/ComposeSheet'
+import { EventSheet } from '../components/EventSheet'
 import { TaskSheet } from '../components/TaskSheet'
 import { tasksOnDay } from '../lib/calendar'
+import { eventsOnDay } from '../lib/events'
 import { fromDay, toDay, todayString } from '../lib/dates'
-import type { Task, TaskInput } from '../types'
+import type { CalendarEvent, EventInput, Task, TaskInput } from '../types'
 
-type Sheet = { kind: 'new' } | { kind: 'edit'; task: Task } | null
+type Sheet = { kind: 'new' } | { kind: 'edit'; task: Task } | { kind: 'event'; event: CalendarEvent } | null
 
 export type TaskActions = {
   add: (input: TaskInput) => void
@@ -17,13 +20,22 @@ export type TaskActions = {
   skip: (id: string, day: string) => void
 }
 
-export function MonthView({ tasks, actions }: { tasks: Task[]; actions: TaskActions }) {
+export type EventActions = {
+  add: (input: EventInput) => void
+  update: (id: string, input: EventInput) => void
+  remove: (id: string) => void
+}
+
+type Props = { tasks: Task[]; events: CalendarEvent[]; actions: TaskActions; eventActions: EventActions }
+
+export function MonthView({ tasks, events, actions, eventActions }: Props) {
   const today = todayString()
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selected, setSelected] = useState(today)
   const [sheet, setSheet] = useState<Sheet>(null)
 
   const dayTasks = useMemo(() => tasksOnDay(tasks, selected), [tasks, selected])
+  const dayEvents = useMemo(() => eventsOnDay(events, selected), [events, selected])
 
   function goToMonth(m: Date) {
     setMonth(m)
@@ -36,12 +48,22 @@ export function MonthView({ tasks, actions }: { tasks: Task[]; actions: TaskActi
     if (!isSameMonth(d, month)) setMonth(startOfMonth(d))
   }
 
-  function save(input: TaskInput) {
+  function focusDay(day: string) {
+    setSelected(day)
+    if (!isSameMonth(fromDay(day), month)) setMonth(startOfMonth(fromDay(day)))
+    setSheet(null)
+  }
+
+  function saveTask(input: TaskInput) {
     if (sheet?.kind === 'edit') actions.update(sheet.task.id, input)
     else actions.add(input)
-    setSelected(input.date)
-    if (!isSameMonth(fromDay(input.date), month)) setMonth(startOfMonth(fromDay(input.date)))
-    setSheet(null)
+    focusDay(input.date)
+  }
+
+  function saveEvent(input: EventInput) {
+    if (sheet?.kind === 'event') eventActions.update(sheet.event.id, input)
+    else eventActions.add(input)
+    focusDay(input.date)
   }
 
   return (
@@ -51,7 +73,7 @@ export function MonthView({ tasks, actions }: { tasks: Task[]; actions: TaskActi
       </div>
       <div className="flex flex-col gap-3">
         <MonthGrid
-          month={month} selected={selected} today={today} tasks={tasks}
+          month={month} selected={selected} today={today} tasks={tasks} events={events}
           onSelect={select}
           onPrev={() => goToMonth(addMonths(month, -1))} onNext={() => goToMonth(addMonths(month, 1))}
         />
@@ -59,21 +81,29 @@ export function MonthView({ tasks, actions }: { tasks: Task[]; actions: TaskActi
       </div>
       <div className="mt-2 md:mt-0">
         <TaskList
-          day={selected} isToday={selected === today} tasks={dayTasks}
+          day={selected} isToday={selected === today} tasks={dayTasks} events={dayEvents}
+          onOpenEvent={(event) => setSheet({ kind: 'event', event })}
           onAdd={() => setSheet({ kind: 'new' })}
           onOpen={(task) => setSheet({ kind: 'edit', task })}
           onComplete={(t) => (t.recurrence ? actions.skip(t.id, selected) : actions.remove(t.id))}
         />
       </div>
 
-      {sheet && (
+      {sheet?.kind === 'new' && (
+        <ComposeSheet defaultDate={selected} onClose={() => setSheet(null)} onSaveTask={saveTask} onSaveEvent={saveEvent} />
+      )}
+      {sheet?.kind === 'edit' && (
         <TaskSheet
-          key={sheet.kind === 'edit' ? sheet.task.id : 'new'}
-          task={sheet.kind === 'edit' ? sheet.task : undefined}
-          defaultDate={selected}
-          onClose={() => setSheet(null)}
-          onSave={save}
-          onDelete={sheet.kind === 'edit' ? () => { actions.remove(sheet.task.id); setSheet(null) } : undefined}
+          key={sheet.task.id} task={sheet.task} defaultDate={selected}
+          onClose={() => setSheet(null)} onSave={saveTask}
+          onDelete={() => { actions.remove(sheet.task.id); setSheet(null) }}
+        />
+      )}
+      {sheet?.kind === 'event' && (
+        <EventSheet
+          key={sheet.event.id} event={sheet.event} defaultDate={selected}
+          onClose={() => setSheet(null)} onSave={saveEvent}
+          onDelete={() => { eventActions.remove(sheet.event.id); setSheet(null) }}
         />
       )}
     </div>
