@@ -1,5 +1,5 @@
 import {
-  addDoc, arrayUnion, collection, deleteDoc, deleteField, doc, onSnapshot, updateDoc,
+  addDoc, arrayUnion, collection, deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc,
 } from 'firebase/firestore'
 import type { CalendarEvent, EventInput, Task, TaskInput } from '../types'
 import { db } from './config'
@@ -55,4 +55,13 @@ export function updateEvent(uid: string, id: string, input: EventInput) {
 }
 export function removeEvent(uid: string, id: string) {
   void deleteDoc(doc(db, 'users', uid, 'events', id))
+}
+
+const settingsDoc = (uid: string) => doc(db, 'users', uid, 'settings', 'main')
+
+export function subscribeSettings(uid: string, onData: (s: { headerText?: string }) => void) {
+  return onSnapshot(settingsDoc(uid), (snap) => onData((snap.data() as { headerText?: string }) ?? {}), () => {})
+}
+export function saveHeaderText(uid: string, headerText: string) {
+  void setDoc(settingsDoc(uid), { headerText }, { merge: true })
 }
