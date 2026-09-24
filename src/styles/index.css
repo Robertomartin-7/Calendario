@@ -52,3 +52,8 @@ button { cursor: pointer; min-height: 44px; min-width: 44px; }
   * { transition-duration: 0ms !important; animation-duration: 0ms !important; }
 }
 }
+
+@keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
+@keyframes sheet-up { from { transform: translateY(24px); opacity: 0 } to { transform: none; opacity: 1 } }
+.anim-fade { animation: fade-in 200ms var(--ease-soft); }
+.anim-sheet { animation: sheet-up 220ms var(--ease-soft); }

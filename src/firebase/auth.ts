@@ -28,6 +28,6 @@ export function authErrorMessage(code: string): string {
     case 'auth/user-not-found': return 'Correo o contraseña incorrectos.'
     case 'auth/too-many-requests': return 'Demasiados intentos. Prueba en unos minutos.'
     case 'auth/network-request-failed': return 'Sin conexión. Revisa internet.'
-    default: return 'No se pudo iniciar sesión. Inténtalo de nuevo.'
+    default: return `No se pudo iniciar sesión (${code || 'error'}). Inténtalo de nuevo.`
   }
 }

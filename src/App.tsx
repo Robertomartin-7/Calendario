@@ -1,8 +1,12 @@
+import { useMemo } from 'react'
+import { addTask, removeTask, updateTask } from './firebase/db'
+import type { TaskInput } from './types'
 import { Login } from './components/Login'
 import { isConfigured } from './firebase/config'
 import { logOut } from './firebase/auth'
 import { useAuth } from './hooks/useAuth'
-import { monthName, todayString, fromDay } from './lib/dates'
+import { useTasks } from './hooks/useTasks'
+import { MonthView } from './views/MonthView'
 
 function SetupNotice() {
   return (
@@ -24,19 +28,27 @@ function Authed() {
   const { user, error } = useAuth()
   if (user === undefined) return <div className="min-h-[100dvh]" aria-busy="true" />
   if (user === null) return <Login initialError={error} />
+  return <Signed uid={user.uid} email={user.email} />
+}
 
-  // Marcador de la Fase 1: la vista Mes llega en la Fase 2.
-  const today = fromDay(todayString())
+function Signed({ uid, email }: { uid: string; email: string | null }) {
+  const { tasks, error } = useTasks(uid)
+  const actions = useMemo(
+    () => ({
+      add: (i: TaskInput) => addTask(uid, i),
+      update: (id: string, i: TaskInput) => updateTask(uid, id, i),
+      remove: (id: string) => removeTask(uid, id),
+    }),
+    [uid],
+  )
   return (
-    <main className="mx-auto max-w-md px-4 py-8">
-      <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-soft">Higiene bucodental</p>
-      <h1 className="font-serif text-4xl font-semibold">
-        {monthName(today)} <span className="text-ink-soft/70 font-normal">{today.getFullYear()}</span>
-      </h1>
-      <p className="mt-6 text-ink-soft">Sesión iniciada como {user.email}.</p>
-      <button onClick={logOut} className="mt-4 rounded-full border border-ink px-5 text-sm">
-        Cerrar sesión
-      </button>
-    </main>
+    <>
+      {error && <p role="alert" className="bg-alta/40 px-4 py-2 text-center text-sm">{error}</p>}
+      <MonthView tasks={tasks} actions={actions} />
+      <footer className="pb-8 text-center text-xs text-ink-faint">
+        {email} ·{' '}
+        <button onClick={logOut} className="min-h-0 min-w-0 underline underline-offset-2">Cerrar sesión</button>
+      </footer>
+    </>
   )
 }
